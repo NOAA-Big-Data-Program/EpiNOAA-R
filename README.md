@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The EpiNOAA R package is designed as a programmatic interaface to the
+The EpiNOAA R package is designed as a programmatic interface to the
 nClimGrid daily data created by NOAA and made publicly available through
 the NOAA Big Data Program on public cloud providers. The goal of this
 project is to allow data subsetting and facilitate access to an analysis

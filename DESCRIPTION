@@ -1,6 +1,6 @@
 Package: EpiNOAA
 Title: Filter and Read nClimGrid Data
-Version: 1.0.0.9000
+Version: 1.0.0
 Authors@R: 
     c(person("Denis", "Willett", , "dswillet@ncsu.edu", role = "aut"),
       person("Emma", "Scott", , "elscott6@ncsu.edu", role = c("aut", "cre"),
@@ -15,7 +15,7 @@ Description: This package provides a programmatic interface to an analysis-ready
     filter down the full nClimGrid dataset to their specific locations and
     times of interest. It pulls the data from an Amazon S3 bucket
     containing monthly parquet files (located at
-    noaa-nclimgrid-daily-pds.s3.amazonaws.com/index.html#EpiNOAA) and
+    noaa-nclimgrid-daily-pds.s3.amazonaws.com/index.html#EpiNOAA
     makes it available for further processing in R.
 License: GPL (>= 3)
 Encoding: UTF-8

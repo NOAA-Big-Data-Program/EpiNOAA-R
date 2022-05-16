@@ -22,7 +22,7 @@ library(viridis)
 
 # Near Real Time vs Historical Data
 
-The EpiNOAA package can either pull near-real time preliminary data or historical scaled data.  It deliberately cannot do both to avoid combining them inadvertently without explicitly intending to do so.  In both cases, the data are generated through an event-driven pipeline on AWS that runs in a few seconds after receiving new data from NOAA.  As of February 2022, new data are released approxiamately every three days.  
+The EpiNOAA package can either pull near-real time preliminary data or historical scaled data.  It deliberately cannot do both to avoid combining them inadvertently without explicitly intending to do so.  In both cases, the data are generated through an event-driven pipeline on AWS that runs in a few seconds after receiving new data from NOAA.  As of February 2022, new data are released approximately every three days.  
 
 ## Near Real Time Data
 

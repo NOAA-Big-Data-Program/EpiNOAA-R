@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The EpiNOAA R package is designed as a programmatic interaface to the nClimGrid daily data created by NOAA and made publicly available through the NOAA Big Data Program on public cloud providers.  The goal of this project is to allow data subsetting and facilitate access to an analysis ready dataset using the `tidyverse` framework for tabular data.  
+The EpiNOAA R package is designed as a programmatic interface to the nClimGrid daily data created by NOAA and made publicly available through the NOAA Big Data Program on public cloud providers.  The goal of this project is to allow data subsetting and facilitate access to an analysis ready dataset using the `tidyverse` framework for tabular data.  
 
 If you would like to know more about nClimGrid data and the background behind this dataset, please visit: [AWS Open Data Registry](https://registry.opendata.aws/noaa-nclimgrid/)
 
@@ -51,7 +51,7 @@ __AWS.S3__ This package relies on the AWS.S3 library under the hood to pull data
 
 This is a basic example which pulls in county data from 2021:
 
-```{r example}
+```{r example, eval=FALSE}
 library(EpiNOAA)
 
 # Make sure both that the number of workers is scaled to your computer
