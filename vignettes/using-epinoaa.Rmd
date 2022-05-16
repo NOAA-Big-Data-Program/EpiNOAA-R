@@ -1,0 +1,281 @@
+---
+title: "Using EpiNOAA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{using-epinoaa}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(EpiNOAA)
+library(viridis)
+```
+
+# Near Real Time vs Historical Data
+
+The EpiNOAA package can either pull near-real time preliminary data or historical scaled data.  It deliberately cannot do both to avoid combining them inadvertently without explicitly intending to do so.  In both cases, the data are generated through an event-driven pipeline on AWS that runs in a few seconds after receiving new data from NOAA.  As of February 2022, new data are released approxiamately every three days.  
+
+## Near Real Time Data
+
+Let's pull in some near real time data up until today.  These data are flagged 'prelim' in the AWS bucket because they have not been scaled yet.  
+
+> __NOTE:__ This vignette was written in February of 2022.  At this time only prelim data is available for Feb 2022 and both scaled and preliminary data are available for Jan 2022.  The code immediately below will ONLY pull preliminary data.  
+
+```{r prelim-data}
+prelim_data <- read_nclimgrid_epinoaa(
+  beginning_date = '2022-01-01',
+  end_date = '2022-02-16',
+  spatial_res = 'cty',
+  scaled_only = FALSE,  # This flag means that we will pull ONLY prelim data.  
+  workers = 10
+)
+```
+
+Terrific!  Now, let's find out the most recent day available from our data: 
+
+```{r recent-day}
+prelim_data %>% 
+  filter(date == max(date)) %>% 
+  pull(date) %>% 
+  unique()
+```
+
+Let's find the coldest counties in the continental US on that day...
+
+```{r coldest-day,  fig.width=6, fig.height=5}
+coldest_counties <- prelim_data %>% 
+  filter(date == max(date)) %>% 
+  mutate(TMIN = as.numeric(TMIN)) %>% 
+  arrange(TMIN) %>% 
+  head(10) %>% 
+  mutate(cty_ste = paste(county, state, sep = ', '),
+         cty_ste = fct_reorder(cty_ste, TMIN))
+
+ggplot(coldest_counties, aes(x = cty_ste, y = TMIN)) + 
+  geom_bar(stat = 'identity') + 
+  theme_bw(14) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  labs(x = '', y = 'Minimum Daily Temperature')
+```
+
+## Historical Data
+
+Now that we've played a bit with preliminary data, let's pull historical (scaled) data for the month of January 2022. 
+
+```{r jan_historical}
+jan_scaled <- read_nclimgrid_epinoaa(
+  beginning_date = '2022-01-01',
+  end_date = '2022-01-31',
+  spatial_res = 'cty',
+  scaled_only = TRUE,  # This flag means that we will pull ONLY scaled data.  
+  workers = 10
+) 
+```
+
+
+## Comparing Scaled and Prelim Data
+
+Let's check to see if there are major differences in the scaled vs preliminary data for the month of January 2022.  
+
+First we will read in just the preliminary data from January 2022.  
+
+```{r jan_prelim}
+jan_prelim <- read_nclimgrid_epinoaa(
+  beginning_date = '2022-01-01',
+  end_date = '2022-01-31',
+  spatial_res = 'cty',
+  scaled_only = FALSE,  # This flag means that we will pull ONLY prelim data.  
+  workers = 10
+) 
+```
+
+Next, let's join the preliminary and the scaled data making sure to label each.  Then we'll examine the differences between the two for each nClimGrid metric.  
+
+```{r prelim_compare, fig.width=6, fig.height=5}
+
+jan_combined <- jan_scaled %>% 
+  left_join(jan_prelim, by = c('date', 'state', 'county', 'region_code'),
+            suffix = c('_scaled', '_prelim')) %>% 
+  select(-contains('year'), -contains('month'), -contains('day')) %>% 
+  mutate(PRCP_diff = as.numeric(PRCP_scaled) - as.numeric(PRCP_prelim),
+         TAVG_diff = as.numeric(TAVG_scaled) - as.numeric(TAVG_prelim),
+         TMIN_diff = as.numeric(TMIN_scaled) - as.numeric(TMIN_prelim),
+         TMAX_diff = as.numeric(TMAX_scaled) - as.numeric(TMAX_prelim)) %>% 
+  pivot_longer(contains('_diff'), names_to = 'Variable', values_to = 'Difference')
+
+ggplot(jan_combined, aes(x = Variable, y = Difference, fill = Variable)) + 
+  geom_violin() + 
+  scale_y_log10() + 
+  scale_fill_viridis(discrete = TRUE) + 
+  theme_bw(14) + 
+  theme(legend.position = 'none')
+```
+
+
+> __NOTE:__ This figure highlights the differences between the preliminary and scaled data available through nClimGrid and accessible using this package.  Please be cognizant of the differences when using this data.  
+
+
+# State Data
+
+Let's explore downloading state data for the US for the year of 2021.  We'll look at which state had the highest and lowest temperature during that time and plot average temperature over the course of the year for each of those two states.  
+
+First, let's import the data:
+```{r state-import}
+
+state_2021 <-  read_nclimgrid_epinoaa(
+  beginning_date = '2021-01-01', 
+  end_date = '2021-12-31', 
+  spatial_res = 'ste',
+  workers = 10)
+
+```
+
+
+Let's take a look at the data:
+```{r state_examine}
+glimpse(state_2021)
+```
+
+Note that everything is read in as characters.  We will change that in the next step, then find the state with the highest and lowest temperature:
+```{r state-maxmin}
+max_min_temp <- state_2021 %>%
+  mutate(TMAX = as.numeric(TMAX),
+         TMIN = as.numeric(TMIN)) %>% 
+  group_by(state) %>% 
+  summarize(max_temp = max(TMAX),
+            min_temp = min(TMIN))
+
+max_temp_state <- max_min_temp %>% 
+  filter(max_temp == max(max_temp)) %>% 
+  pull(state)
+
+min_temp_state <- max_min_temp %>% 
+  filter(min_temp == min(min_temp)) %>% 
+  pull(state)
+
+print('State with the highest temperature (C) in 2021:')
+print(max_temp_state)
+
+print('State with the lowest temperature (C) in 2021:')
+print(min_temp_state)
+
+```
+
+Great!  Now, let's take a look at average temperatures in these states over the course of the year:
+
+```{r temp-plot, fig.width=6}
+# Prepare data for plotting:
+az_nd <- state_2021 %>% 
+  mutate(TAVG = as.numeric(TAVG), # Remember to convert from character
+         date = lubridate::ymd(date)) %>% 
+  filter(state %in% c(max_temp_state, min_temp_state)) 
+
+
+ggplot(az_nd, aes(x = date, y = TAVG, color = state)) + 
+  geom_line() + 
+  stat_smooth() + 
+  theme_bw() + 
+  theme(legend.title = element_blank()) + 
+  labs(x = '', y = 'Average Temperature (C)')
+```
+
+
+
+# County Data
+
+
+Next, let's take a look at county data.  Specifically, let's pull all the county data for the past year and identify which counties in the US have the most extreme temperature swings: the largest difference between min and max temperatures on any given day over the past ~5 years.
+
+First, let's load the county data:
+```{r load-county}
+
+county_2021 <-  read_nclimgrid_epinoaa(
+  beginning_date = '2017-01-01', 
+  end_date = '2021-12-31', 
+  spatial_res = 'cty',
+  workers = 10)
+
+```
+
+We are starting to get some larger data in.  The county dataset we just loaded is getting up there in MB:
+```{r object_size}
+object.size(county_2021)/1000000
+```
+
+Next, let's take a shot at calculating the temperature extremes for every day and every county:
+```{r temp-extremes}
+temp_differences <- county_2021 %>%
+  mutate(TMAX = as.numeric(TMAX),
+         TMIN = as.numeric(TMIN),
+         temp_difference = TMAX - TMIN)
+```
+
+Now, we'll find the top ten counties for each year that had the highest daily temperature swing in that year:
+```{r temp-year}
+rank_difference <- temp_differences %>% 
+  select(year, state, county, temp_difference) %>% 
+  group_by(year) %>% 
+  arrange(temp_difference) %>% 
+  top_n(10) %>% 
+  mutate(rank = dense_rank(desc(temp_difference))) %>% 
+  arrange(rank) 
+
+head(rank_difference)
+```
+
+Looks like counties in Kansas have a fair amount of temperature swings.  Let's take another look at these data: 
+```{r rank-year-plot, fig.width=6, fig.height=5}
+library(ggrepel)
+
+county_summ <- rank_difference %>% 
+  ungroup() %>% 
+  group_by(county, state) %>% 
+  summarize(count = n(),
+            avg_temp_diff = mean(temp_difference))
+
+ggplot(county_summ, 
+       aes(x = avg_temp_diff, 
+           y = count, 
+           label = paste(county, state, sep = ', '))
+       ) + 
+  geom_text_repel() + 
+  geom_point() + 
+  theme_bw() + 
+  labs(x = 'Avg Annual Maximum Daily Temperature Difference (2017-2021)',
+       y = 'Number of Times Ranked \nin Top 10 Counties over 5yrs')
+```
+
+Wow!  Looks like Hamilton County, KS takes the prize! It ranked in the top 10 counties for greatest difference between daily minimum and maximum temperatures every year for the past 5 years.  It also has the highest daily temperature difference as measured by the most extreme annual day averaged over the past 5 years.  
+
+Let's look at states with counties in the top ten annually:
+```{r state-county,  fig.width=6}
+state_ranks <- rank_difference %>% 
+  ungroup() %>% 
+  group_by(year, state) %>% 
+  count() %>% 
+  filter(n > 1)
+
+ggplot(state_ranks, aes(x = as.numeric(year), y = n, linetype = state)) + 
+  geom_point() + 
+  geom_line() +
+  theme_bw() + 
+  scale_y_continuous(breaks = seq(from = 1, to = 10, by = 2)) + 
+  labs(x = 'Year', y = 'Number of Counties in Top 10') + 
+  theme(legend.position = c(0.2, 0.3),
+        legend.title = element_blank(),
+        legend.background = element_rect(color = 'grey30'))
+
+
+```
+
+
+...And Kansas it is!  Hopefully these examples help get you started using the nClimGrid daily data.  Please reach out to the NOAA BDP program (noaa.bdp@noaa.gov) with questions, comments, and feedback.  

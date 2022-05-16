@@ -1,0 +1,37 @@
+Package: EpiNOAA
+Title: Filter and Read nClimGrid Data
+Version: 1.0.0.9000
+Authors@R: 
+    c(person("Denis", "Willett", , "dswillet@ncsu.edu", role = "aut"),
+      person("Emma", "Scott", , "elscott6@ncsu.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1586-9118")),
+      person("Jennifer", "Runkle", , "jrrunkle@ncsu.edu", role = "aut",
+           comment = c(ORCID = "0000-0003-4611-1745")),
+      person("Russel", "Vose", , "russel.vose@noaa.gov", role = "aut"),
+      person("Hunter", "Jones", , "hunter.jones@noaa.gov", role = "aut"))
+Description: This package provides a programmatic interface to an analysis-ready
+    version of the nClimGrid Daily dataset created by NOAA and made available
+    via AWS Open Data Registry.  It allows researchers to
+    filter down the full nClimGrid dataset to their specific locations and
+    times of interest. It pulls the data from an Amazon S3 bucket
+    containing monthly parquet files (located at
+    noaa-nclimgrid-daily-pds.s3.amazonaws.com/index.html#EpiNOAA) and
+    makes it available for further processing in R.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    arrow (>= 6.0.1),
+    aws.s3 (>= 0.3.21),
+    dplyr (>= 1.0.7),
+    furrr (>= 0.2.3),
+    future (>= 1.23.0),
+    lubridate (>= 1.8.0),
+    magrittr (>= 2.0.1),
+    purrr (>= 0.3.4),
+    stringr (>= 1.4.0)
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
