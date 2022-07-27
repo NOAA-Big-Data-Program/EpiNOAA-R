@@ -27,12 +27,12 @@ If you would like to know more about nClimGrid data and the background behind th
 ## Installation
 
 ```
-# Install from CRAN
+# Install from CRAN (coming soon...)
 install.packages("epinoaa")
 
 # Or the development version from GitHub
 # install.packages("devtools")
-devtools::install_github("...")
+devtools::install_github("https://github.com/NOAA-Big-Data-Program/EpiNOAA-R")
 
 ```
 

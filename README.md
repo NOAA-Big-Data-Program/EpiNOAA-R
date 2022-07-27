@@ -20,12 +20,12 @@ Registry](https://registry.opendata.aws/noaa-nclimgrid/)
 
 ## Installation
 
-    # Install from CRAN
+    # Install from CRAN (coming soon...)
     install.packages("epinoaa")
 
     # Or the development version from GitHub
     # install.packages("devtools")
-    devtools::install_github("...")
+    devtools::install_github("https://github.com/NOAA-Big-Data-Program/EpiNOAA-R")
 
 ## Configuration
 
