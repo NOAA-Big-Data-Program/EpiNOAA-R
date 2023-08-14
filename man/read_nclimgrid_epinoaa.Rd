@@ -8,11 +8,9 @@ read_nclimgrid_epinoaa(
   beginning_date = "1951-01-01",
   end_date = "2021-10-01",
   spatial_res = "cty",
-  scaled_only = TRUE,
   states = "all",
   counties = "all",
-  tracts = "all",
-  workers = 2
+  tracts = "all"
 )
 }
 \arguments{
@@ -22,15 +20,11 @@ read_nclimgrid_epinoaa(
 
 \item{spatial_res}{One of either 'ste' or 'cty' for county and state respectively. These correspond to spatial resolutions made available in the original nClimGrid dataset.}
 
-\item{scaled_only}{This defaults to true as this function is only configured to pull scaled data.  NOAA preliminary data can be found through the AWS bucket on the AWS Open Data Registry.}
-
 \item{states}{One of either 'all', or a character vector of state abbreviations.}
 
 \item{counties}{One of either 'all', or a character vector of county names.}
 
-\item{tracts}{Defaults to all.  Census tracts will be added in a later version of this package.}
-
-\item{workers}{The number of workers to use for parallel processing.  Defaults to 2.  Be careful not to exceed capacity of your machine.}
+\item{tracts}{One of either 'all', or a character vector of census tract fips codes.}
 }
 \value{
 A tibble of spatio-temporally filtered nClimGrid Daily data.
@@ -40,5 +34,5 @@ Read and Filter nClimGrid Daily Data
 }
 \examples{
 \donttest{read_nclimgrid_epinoaa(beginning_date="1951-01-01",
-end_date="1951-02-01",spatial_res="cty",states="NC",counties="Wake County", workers = 2)}
+end_date="1951-02-01",spatial_res="cty",states="NC",counties="NC: Wake County")}
 }

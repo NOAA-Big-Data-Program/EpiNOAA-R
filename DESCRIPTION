@@ -20,13 +20,11 @@ Description: This package provides a programmatic interface to an analysis-ready
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Imports: 
     arrow (>= 6.0.1),
     aws.s3 (>= 0.3.21),
     dplyr (>= 1.0.7),
-    furrr (>= 0.2.3),
-    future (>= 1.23.0),
     ggrepel,
     lubridate (>= 1.8.0),
     magrittr (>= 2.0.1),
